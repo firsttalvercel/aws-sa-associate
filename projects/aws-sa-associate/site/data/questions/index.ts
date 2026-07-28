@@ -1,14 +1,54 @@
 import type { Question, Domain } from '../../lib/types'
 import { seedQuestions } from './seed'
-
-// Generated question files will be imported here as they are created
-// import { iam_questions } from './iam'
-// import { kms_questions } from './kms'
-// ... etc
+import { iam_questions } from './iam'
+import { kms_questions } from './kms'
+import { waf_shield_cognito_questions } from './waf-shield-cognito'
+import { vpc_security_questions } from './vpc-security'
+import { secrets_cloudtrail_questions } from './secrets-cloudtrail'
+import { ec2_compute_questions } from './ec2-compute'
+import { ec2_autoscaling_questions } from './ec2-autoscaling'
+import { elb_questions } from './elb'
+import { rds_aurora_questions } from './rds-aurora'
+import { s3_resilience_questions } from './s3-resilience'
+import { sqs_sns_eventbridge_questions } from './sqs-sns-eventbridge'
+import { route53_cloudfront_questions } from './route53-cloudfront'
+import { dr_strategies_questions } from './dr-strategies'
+import { storage_performance_questions } from './storage-performance'
+import { database_performance_questions } from './database-performance'
+import { network_performance_questions } from './network-performance'
+import { serverless_containers_questions } from './serverless-containers'
+import { analytics_streaming_questions } from './analytics-streaming'
+import { ec2_pricing_questions } from './ec2-pricing'
+import { storage_cost_questions } from './storage-cost'
+import { database_cost_questions } from './database-cost'
+import { network_cost_questions } from './network-cost'
+import { cost_tools_questions } from './cost-tools'
 
 export const ALL_QUESTIONS: Question[] = [
   ...seedQuestions,
-  // generated batches will be spread here
+  ...iam_questions,
+  ...kms_questions,
+  ...waf_shield_cognito_questions,
+  ...vpc_security_questions,
+  ...secrets_cloudtrail_questions,
+  ...ec2_compute_questions,
+  ...ec2_autoscaling_questions,
+  ...elb_questions,
+  ...rds_aurora_questions,
+  ...s3_resilience_questions,
+  ...sqs_sns_eventbridge_questions,
+  ...route53_cloudfront_questions,
+  ...dr_strategies_questions,
+  ...storage_performance_questions,
+  ...database_performance_questions,
+  ...network_performance_questions,
+  ...serverless_containers_questions,
+  ...analytics_streaming_questions,
+  ...ec2_pricing_questions,
+  ...storage_cost_questions,
+  ...database_cost_questions,
+  ...network_cost_questions,
+  ...cost_tools_questions,
 ]
 
 export function getQuestionsByDomain(domain: Domain): Question[] {
