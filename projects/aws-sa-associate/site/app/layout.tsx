@@ -23,7 +23,7 @@ const NAV = [
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${geist.className} bg-gray-50 min-h-screen`}>
+      <body className={`${geist.className} bg-gray-50 min-h-screen`} suppressHydrationWarning>
         <div className="flex min-h-screen">
           <aside className="w-56 bg-white border-r border-gray-200 flex flex-col fixed h-full z-10">
             <div className="px-5 py-5 border-b border-gray-100">
