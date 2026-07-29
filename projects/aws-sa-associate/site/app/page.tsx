@@ -10,6 +10,33 @@ import type { Domain } from '../lib/types'
 
 const DOMAIN_WEIGHTS: Record<Domain, number> = { 1: 30, 2: 26, 3: 24, 4: 20 }
 
+function AccuracySparkline({ points }: { points: number[] }) {
+  if (points.length < 2) return null
+  const W = 200, H = 48, pad = 4
+  const minY = Math.min(...points), maxY = Math.max(...points)
+  const range = maxY - minY || 1
+  const xs = points.map((_, i) => pad + (i / (points.length - 1)) * (W - pad * 2))
+  const ys = points.map(v => H - pad - ((v - minY) / range) * (H - pad * 2))
+  const path = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ')
+  const fill = `${path} L${xs[xs.length-1].toFixed(1)},${H} L${xs[0].toFixed(1)},${H} Z`
+  const last = points[points.length - 1]
+  const trend = last >= points[points.length - 2] ? 'up' : 'down'
+
+  return (
+    <div className="flex items-end gap-3">
+      <svg width={W} height={H} className="flex-shrink-0">
+        <path d={fill} fill={trend === 'up' ? '#dcfce7' : '#fee2e2'} />
+        <path d={path} fill="none" stroke={trend === 'up' ? '#16a34a' : '#ef4444'} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+        <circle cx={xs[xs.length-1]} cy={ys[ys.length-1]} r="3" fill={trend === 'up' ? '#16a34a' : '#ef4444'} />
+      </svg>
+      <div className="text-right">
+        <div className={`text-lg font-bold ${trend === 'up' ? 'text-green-600' : 'text-red-500'}`}>{last}%</div>
+        <div className="text-xs text-gray-400">last session</div>
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const { progress } = useProgress()
   const overall = getOverallStats(progress)
@@ -24,6 +51,15 @@ export default function Dashboard() {
   }))
 
   const lastSim = progress.simHistory[progress.simHistory.length - 1]
+
+  // Accuracy trend: last 10 sessions, each as % correct
+  const sessionAccuracy = progress.sessions
+    .slice(-10)
+    .map(s => {
+      const total = s.questions.length
+      const correct = s.questions.filter(q => q.correct).length
+      return total > 0 ? Math.round((correct / total) * 100) : 0
+    })
 
   return (
     <div className="space-y-8">
@@ -41,7 +77,7 @@ export default function Dashboard() {
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="text-3xl font-bold text-gray-900">{overall.accuracy}%</div>
-          <div className="text-sm text-gray-500 mt-1">Accuracy</div>
+          <div className="text-sm text-gray-500 mt-1">Overall accuracy</div>
           <div className="text-xs text-gray-400 mt-0.5">{overall.correct} correct</div>
         </div>
         <div className={`rounded-xl border p-5 ${lastSim ? (lastSim.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') : 'bg-white border-gray-200'}`}>
@@ -52,6 +88,17 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Accuracy trend sparkline */}
+      {sessionAccuracy.length >= 2 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-700">Accuracy Trend</h2>
+            <span className="text-xs text-gray-400">last {sessionAccuracy.length} sessions</span>
+          </div>
+          <AccuracySparkline points={sessionAccuracy} />
+        </div>
+      )}
 
       {/* Domain breakdown */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">

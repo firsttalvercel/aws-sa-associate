@@ -112,21 +112,30 @@ export default function MistakesPage() {
                     {isOpen ? <ChevronUp size={14} className="text-gray-400 mt-1 flex-shrink-0" /> : <ChevronDown size={14} className="text-gray-400 mt-1 flex-shrink-0" />}
                   </button>
                   {isOpen && (
-                    <div className="px-5 pb-4 space-y-2 border-t border-gray-100 pt-3 bg-gray-50">
+                    <div className="px-5 pb-4 space-y-2 border-t border-gray-100 pt-3">
                       <div className="space-y-1.5">
                         {q.options.map(opt => (
                           <div
                             key={opt.id}
-                            className={`flex items-start gap-2 text-sm px-3 py-2 rounded-lg ${q.correct.includes(opt.id) ? 'bg-green-50 border border-green-200 text-green-900' : 'text-gray-600'}`}
+                            className={`flex items-start gap-3 text-sm px-3 py-2.5 rounded-lg border ${q.correct.includes(opt.id) ? 'bg-green-50 border-green-300 text-green-900' : 'bg-gray-50 border-gray-200 text-gray-600'}`}
                           >
-                            <span className="font-bold flex-shrink-0">{opt.id}.</span>
-                            <span>{opt.text}</span>
-                            {q.correct.includes(opt.id) && <span className="ml-auto text-xs text-green-700 font-semibold flex-shrink-0">CORRECT</span>}
+                            <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mt-0.5 ${q.correct.includes(opt.id) ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>{opt.id}</span>
+                            <span className="flex-1">{opt.text}</span>
                           </div>
                         ))}
                       </div>
-                      <div className="mt-2 p-3 bg-white rounded-lg border border-gray-200 text-xs text-gray-700">
-                        <span className="font-semibold">Why: </span>{q.explanation}
+                      <div className="rounded-xl border overflow-hidden text-sm mt-3">
+                        <div className="bg-blue-600 px-4 py-2.5 text-white font-semibold text-xs uppercase tracking-wide">Explanation</div>
+                        <div className="bg-gray-50 px-4 py-3 space-y-2 text-gray-700 text-xs">
+                          <p className="leading-relaxed">{q.explanation}</p>
+                          {Object.entries(q.distractors).length > 0 && (
+                            <div className="pt-2 border-t border-gray-200 space-y-1">
+                              {Object.entries(q.distractors).map(([k, v]) => (
+                                <p key={k}><span className="font-semibold text-gray-800">{k}:</span> {v}</p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}

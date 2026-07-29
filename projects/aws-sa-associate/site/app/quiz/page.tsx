@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Zap, Clock, CheckSquare } from 'lucide-react'
 import type { Domain } from '../../lib/types'
 import { domainLabel } from '../../components/DomainBadge'
@@ -9,12 +9,17 @@ import { getPoolStats } from '../../data/questions'
 
 type DomainFilter = Domain | 'all'
 
-export default function QuizConfig() {
+function QuizConfigInner() {
   const router = useRouter()
-  const [domain, setDomain] = useState<DomainFilter>('all')
-  const [count, setCount] = useState(10)
+  const searchParams = useSearchParams()
+  const initDomain = (searchParams.get('domain') ? Number(searchParams.get('domain')) as DomainFilter : 'all')
+  const initCount = searchParams.get('count') ? parseInt(searchParams.get('count')!) : 10
+  const initFeedback = searchParams.get('feedback') !== 'false'
+
+  const [domain, setDomain] = useState<DomainFilter>(initDomain)
+  const [count, setCount] = useState([5,10,15,20,30].includes(initCount) ? initCount : 10)
   const [timed, setTimed] = useState(false)
-  const [feedback, setFeedback] = useState(true)
+  const [feedback, setFeedback] = useState(initFeedback)
   const pool = getPoolStats()
 
   const domainOptions: { value: DomainFilter; label: string; count: number }[] = [
@@ -116,5 +121,13 @@ export default function QuizConfig() {
         </button>
       </div>
     </div>
+  )
+}
+
+export default function QuizConfig() {
+  return (
+    <Suspense fallback={<div className="text-gray-500 text-sm">Loading…</div>}>
+      <QuizConfigInner />
+    </Suspense>
   )
 }

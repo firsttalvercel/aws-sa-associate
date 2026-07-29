@@ -1,6 +1,7 @@
 'use client'
 
-import { CheckCircle, XCircle, Award } from 'lucide-react'
+import Link from 'next/link'
+import { CheckCircle, XCircle, Award, Zap } from 'lucide-react'
 import type { Domain } from '../lib/types'
 import { domainLabel, DOMAIN_BG } from './DomainBadge'
 
@@ -20,6 +21,15 @@ export function ResultsSummary({ correct, total, scaledScore, passed, domainBrea
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0
   const mins = Math.floor(durationMs / 60000)
   const secs = Math.floor((durationMs % 60000) / 1000)
+
+  // Find weakest domain (only among domains with questions)
+  const domainsWithData = ([1, 2, 3, 4] as Domain[]).filter(d => domainBreakdown[d].total > 0)
+  const weakest = domainsWithData.reduce<Domain | null>((worst, d) => {
+    if (!worst) return d
+    const pct = (r: Domain) => domainBreakdown[r].correct / domainBreakdown[r].total
+    return pct(d) < pct(worst) ? d : worst
+  }, null)
+  const weakestPct = weakest ? Math.round((domainBreakdown[weakest].correct / domainBreakdown[weakest].total) * 100) : 0
 
   return (
     <div className="space-y-6">
@@ -55,15 +65,18 @@ export function ResultsSummary({ correct, total, scaledScore, passed, domainBrea
             const { total: dt, correct: dc } = domainBreakdown[d]
             if (dt === 0) return null
             const pct = Math.round((dc / dt) * 100)
+            const isWeakest = d === weakest
             return (
               <div key={d}>
-                <div className="flex justify-between text-xs text-gray-600 mb-1">
-                  <span>D{d}: {domainLabel(d)}</span>
-                  <span className="font-medium">{dc}/{dt} ({pct}%)</span>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className={`${isWeakest ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+                    D{d}: {domainLabel(d)}{isWeakest && ' ↓'}
+                  </span>
+                  <span className="font-medium text-gray-600">{dc}/{dt} ({pct}%)</span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${DOMAIN_BG[d]} transition-all`}
+                    className={`h-full rounded-full transition-all ${isWeakest ? 'bg-red-400' : DOMAIN_BG[d]}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -72,6 +85,23 @@ export function ResultsSummary({ correct, total, scaledScore, passed, domainBrea
           })}
         </div>
       </div>
+
+      {/* Weak domain CTA */}
+      {weakest && weakestPct < 80 && (
+        <Link
+          href={`/quiz?domain=${weakest}&count=15&feedback=true`}
+          className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 hover:bg-amber-100 transition-colors group"
+        >
+          <div>
+            <p className="text-sm font-semibold text-amber-900">Weakest: D{weakest} {domainLabel(weakest)} ({weakestPct}%)</p>
+            <p className="text-xs text-amber-700 mt-0.5">Drill 15 targeted questions now</p>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-200 px-3 py-1.5 rounded-lg group-hover:bg-amber-300 transition-colors">
+            <Zap size={12} />
+            Drill it
+          </div>
+        </Link>
+      )}
     </div>
   )
 }

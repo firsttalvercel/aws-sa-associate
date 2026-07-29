@@ -15,6 +15,7 @@ function ScenarioCard({ question, attemptedIds }: { question: Question; attempte
   const [selected, setSelected] = useState<OptionId[]>([])
   const [revealed, setRevealed] = useState(false)
   const attempted = attemptedIds.has(question.id)
+  const multiCount = question.correct.length > 1 ? question.correct.length : null
 
   const toggle = (id: OptionId) => {
     if (revealed) return
@@ -27,22 +28,21 @@ function ScenarioCard({ question, attemptedIds }: { question: Question; attempte
 
   const check = () => setRevealed(true)
   const isCorrect = revealed && selected.length === question.correct.length && question.correct.every(c => selected.includes(c))
+  const canConfirm = selected.length > 0 && (question.type === 'single' || selected.length === question.correct.length)
 
   return (
-    <div className={`bg-white border rounded-xl overflow-hidden transition-all ${attempted ? 'border-gray-200' : 'border-gray-200'}`}>
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full text-left px-5 py-4 flex items-start gap-3"
+        className="w-full text-left px-5 py-4 flex items-start gap-3 hover:bg-gray-50 transition-colors"
       >
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <DomainBadge domain={question.domain} />
-            {question.topics.slice(0, 3).map(t => (
-              <span key={t} className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">{t}</span>
-            ))}
             {question.type === 'multi' && (
-              <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">Multi-select</span>
+              <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-medium">Multi-select</span>
             )}
+            {attempted && <span className="text-xs text-green-600 font-medium">Attempted</span>}
           </div>
           <p className="text-sm text-gray-800 leading-relaxed line-clamp-2">{question.stem}</p>
         </div>
@@ -53,6 +53,11 @@ function ScenarioCard({ question, attemptedIds }: { question: Question; attempte
 
       {open && (
         <div className="px-5 pb-5 space-y-3 border-t border-gray-100 pt-4">
+          {multiCount && (
+            <p className="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded px-2 py-1 inline-block">
+              Select {multiCount === 2 ? 'TWO' : 'THREE'} answers
+            </p>
+          )}
           <div className="space-y-2">
             {question.options.map(opt => (
               <OptionButton
@@ -71,17 +76,31 @@ function ScenarioCard({ question, attemptedIds }: { question: Question; attempte
           {!revealed ? (
             <button
               onClick={check}
-              disabled={selected.length === 0}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg disabled:opacity-40 hover:bg-blue-700 transition-colors"
+              disabled={!canConfirm}
+              className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg disabled:opacity-40 hover:bg-blue-700 transition-colors"
             >
-              Check Answer
+              Confirm
             </button>
           ) : (
-            <div className={`p-4 rounded-lg border text-sm ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-              <p className={`font-semibold mb-1 ${isCorrect ? 'text-green-800' : 'text-red-800'}`}>
-                {isCorrect ? 'Correct!' : `Incorrect — Answer: ${question.correct.join(', ')}`}
-              </p>
-              <p className="text-gray-700">{question.explanation}</p>
+            <div className="rounded-xl border overflow-hidden text-sm">
+              <div className={`flex items-center gap-2 px-4 py-2.5 font-semibold text-white ${isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
+                {isCorrect ? 'Correct' : `Incorrect — correct: ${question.correct.join(', ')}`}
+              </div>
+              <div className="bg-gray-50 px-4 py-3 space-y-2 text-gray-700 text-sm border-t border-gray-200">
+                <p className="leading-relaxed">{question.explanation}</p>
+                {Object.entries(question.distractors).length > 0 && (
+                  <div className="pt-2 border-t border-gray-200 space-y-1">
+                    {Object.entries(question.distractors).map(([k, v]) => (
+                      <p key={k} className="text-xs text-gray-600"><span className="font-semibold text-gray-800">{k}:</span> {v}</p>
+                    ))}
+                  </div>
+                )}
+                <div className="pt-2 border-t border-gray-200 flex flex-wrap gap-1">
+                  {question.topics.map(t => (
+                    <span key={t} className="text-xs px-2 py-0.5 bg-white border border-gray-200 text-gray-500 rounded-full">{t}</span>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -98,6 +117,7 @@ function ScenariosInner() {
   const [domain, setDomain] = useState<Domain | 'all'>('all')
   const [type, setType] = useState<'all' | 'single' | 'multi'>('all')
   const [topic, setTopic] = useState(topicFilter)
+  const [unattemptedOnly, setUnattemptedOnly] = useState(false)
 
   const attemptedIds = useMemo(() => {
     const ids = new Set<string>()
@@ -116,9 +136,10 @@ function ScenariosInner() {
       if (domain !== 'all' && q.domain !== domain) return false
       if (type !== 'all' && q.type !== type) return false
       if (topic && !q.topics.map(t => t.toLowerCase()).some(t => t.includes(topic.toLowerCase()))) return false
+      if (unattemptedOnly && attemptedIds.has(q.id)) return false
       return true
     })
-  }, [domain, type, topic])
+  }, [domain, type, topic, unattemptedOnly, attemptedIds])
 
   return (
     <div className="space-y-6">
@@ -174,6 +195,16 @@ function ScenariosInner() {
             />
           </div>
         </div>
+        {/* Unattempted toggle */}
+        <button
+          onClick={() => setUnattemptedOnly(!unattemptedOnly)}
+          className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${unattemptedOnly ? 'bg-blue-50 border-blue-300 text-blue-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+        >
+          <span className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center flex-shrink-0 ${unattemptedOnly ? 'bg-blue-500 border-blue-500' : 'border-gray-400'}`}>
+            {unattemptedOnly && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+          </span>
+          Unattempted only
+        </button>
       </div>
 
       {/* Questions */}
