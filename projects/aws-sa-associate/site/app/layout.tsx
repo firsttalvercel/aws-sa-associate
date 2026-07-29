@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
-import { LayoutDashboard, Zap, Monitor, BookOpen, List, AlertTriangle, FileText } from "lucide-react";
+import { LayoutDashboard, Zap, Monitor, BookOpen, List, AlertTriangle, FileText, Headphones } from "lucide-react";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -19,6 +19,7 @@ const NAV = [
   { href: "/scenarios", label: "Scenarios", icon: List },
   { href: "/mistakes", label: "Mistakes", icon: AlertTriangle },
   { href: "/cheatsheet", label: "Cheat Sheet", icon: FileText },
+  { href: "/podcast", label: "Podcast", icon: Headphones },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
