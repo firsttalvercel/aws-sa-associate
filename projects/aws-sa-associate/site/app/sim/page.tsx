@@ -166,32 +166,35 @@ export default function SimExam() {
   if (!q) return null
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-3">
+      {/* Exam header bar */}
+      <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Monitor size={16} className="text-orange-500" />
-          <span className="text-sm font-semibold text-gray-700">Simulation Exam</span>
+          <Monitor size={15} className="text-orange-500" />
+          <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sim Exam</span>
         </div>
-        <span className="text-xs text-gray-500">{quiz.flagged.size} flagged</span>
+        <div className="flex-1">
+          <TimerBar
+            totalSeconds={TOTAL_SECONDS}
+            paused={timer.paused}
+            onPause={timer.pause}
+            onResume={timer.resume}
+            formatted={timer.formatted}
+            pct={timer.pct}
+          />
+        </div>
+        <div className="flex items-center gap-3 text-xs text-gray-500">
+          {quiz.flagged.size > 0 && <span className="text-amber-600 font-medium">{quiz.flagged.size} flagged</span>}
+          <span className="font-semibold text-gray-700">{quiz.currentIndex + 1}<span className="font-normal text-gray-400">/{questions.length}</span></span>
+        </div>
       </div>
 
-      {/* Progress */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-          <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${quiz.progress}%` }} />
-        </div>
-        <span className="text-xs text-gray-500 flex-shrink-0">{quiz.currentIndex + 1}/{questions.length}</span>
+      {/* Progress strip */}
+      <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-full bg-orange-500 rounded-full transition-all duration-300" style={{ width: `${quiz.progress}%` }} />
       </div>
 
-      <TimerBar
-        totalSeconds={TOTAL_SECONDS}
-        paused={timer.paused}
-        onPause={timer.pause}
-        onResume={timer.resume}
-        formatted={timer.formatted}
-        pct={timer.pct}
-      />
-
+      {/* Question */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <QuestionCard
           question={q}
@@ -213,7 +216,7 @@ export default function SimExam() {
 
       {/* Question navigator */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <p className="text-xs font-semibold text-gray-600 mb-3">Jump to question</p>
+        <p className="text-xs font-semibold text-gray-500 mb-2.5 uppercase tracking-wide">Jump to question</p>
         <div className="flex flex-wrap gap-1.5">
           {questions.map((_, i) => {
             const ans = quiz.answers[i]
@@ -225,9 +228,9 @@ export default function SimExam() {
                 onClick={() => quiz.goTo(i)}
                 className={`w-7 h-7 text-xs rounded font-medium transition-colors ${
                   isCurrent ? 'bg-orange-500 text-white' :
-                  isFlagged ? 'bg-amber-100 text-amber-800 border border-amber-300' :
-                  ans ? 'bg-gray-200 text-gray-700' :
-                  'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'
+                  isFlagged ? 'bg-amber-100 text-amber-700 border border-amber-300' :
+                  ans ? 'bg-gray-200 text-gray-600' :
+                  'bg-white border border-gray-200 text-gray-400 hover:border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 {i + 1}

@@ -22,18 +22,23 @@ function SessionInner() {
   const timed = params.get('timed') === 'true'
   const feedbackMode = params.get('feedback') !== 'false'
 
-  const [questions] = useState(() => sampleQuestions(count, domain === 'all' ? undefined : domain as Domain))
+  const [questions, setQuestions] = useState<ReturnType<typeof sampleQuestions>>([])
   const quiz = useQuiz(questions)
   const totalSecs = count * 120
   const timer = useTimer(timed ? totalSecs : 0, () => { if (timed) quiz.setState('done') })
   const savedRef = useRef(false)
 
   useEffect(() => {
+    const qs = sampleQuestions(count, domain === 'all' ? undefined : domain as Domain)
+    setQuestions(qs)
+  }, [])
+
+  useEffect(() => {
     if (questions.length > 0) {
       quiz.start()
       if (timed) timer.start()
     }
-  }, [])
+  }, [questions.length])
 
   useEffect(() => {
     if (quiz.state === 'done' && !savedRef.current) {
@@ -107,34 +112,34 @@ function SessionInner() {
   if (!q) return null
 
   return (
-    <div className="space-y-4">
-      {/* Progress bar */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-          <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${quiz.progress}%` }} />
+    <div className="space-y-3">
+      {/* Header bar */}
+      <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4">
+        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex-shrink-0">Quick Test</span>
+        {timed && (
+          <div className="flex-1">
+            <TimerBar
+              totalSeconds={totalSecs}
+              paused={timer.paused}
+              onPause={timer.pause}
+              onResume={timer.resume}
+              formatted={timer.formatted}
+              pct={timer.pct}
+            />
+          </div>
+        )}
+        <div className="flex items-center gap-3 text-xs">
+          {quiz.flagged.size > 0 && <span className="text-amber-600 font-medium">{quiz.flagged.size} flagged</span>}
+          <span className="font-semibold text-gray-700">{quiz.currentIndex + 1}<span className="font-normal text-gray-400">/{questions.length}</span></span>
         </div>
-        <span className="text-xs text-gray-500 flex-shrink-0">{quiz.currentIndex + 1}/{questions.length}</span>
       </div>
 
-      {/* Timer */}
-      {timed && (
-        <TimerBar
-          totalSeconds={totalSecs}
-          paused={timer.paused}
-          onPause={timer.pause}
-          onResume={timer.resume}
-          formatted={timer.formatted}
-          pct={timer.pct}
-        />
-      )}
+      {/* Progress strip */}
+      <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-full bg-blue-500 rounded-full transition-all duration-300" style={{ width: `${quiz.progress}%` }} />
+      </div>
 
-      {/* Flagged indicator */}
-      {quiz.flagged.size > 0 && (
-        <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-1.5">
-          {quiz.flagged.size} question{quiz.flagged.size > 1 ? 's' : ''} flagged for review
-        </div>
-      )}
-
+      {/* Question */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <QuestionCard
           question={q}

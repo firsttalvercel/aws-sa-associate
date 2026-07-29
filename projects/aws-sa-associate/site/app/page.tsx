@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Zap, Monitor, BookOpen, List, AlertTriangle, TrendingUp } from 'lucide-react'
+import { Zap, Monitor, BookOpen, List, AlertTriangle, TrendingUp, FileText } from 'lucide-react'
 import { useProgress } from '../hooks/useProgress'
 import { getOverallStats, getDomainStats } from '../lib/storage'
 import { domainLabel, DOMAIN_BG } from '../components/DomainBadge'
@@ -114,6 +114,15 @@ export default function Dashboard() {
               <span className="font-semibold text-gray-900">Scenarios</span>
             </div>
             <p className="text-sm text-gray-500">Browse and filter questions by domain, service, or topic.</p>
+          </Link>
+          <Link href="/cheatsheet" className="bg-white border border-gray-200 rounded-xl p-5 hover:border-indigo-300 hover:shadow-sm transition-all group col-span-2">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
+                <FileText size={16} className="text-indigo-600 group-hover:text-white transition-colors" />
+              </div>
+              <span className="font-semibold text-gray-900">Cheat Sheet</span>
+            </div>
+            <p className="text-sm text-gray-500">All domains, service comparisons, decision tables, exam traps, and key numbers in one place.</p>
           </Link>
         </div>
       </div>
