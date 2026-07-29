@@ -95,7 +95,7 @@ export function QuestionCard({
             <p className="leading-relaxed">{question.explanation}</p>
             {Object.entries(question.distractors).length > 0 && (
               <div className="pt-2 border-t border-gray-200 space-y-1.5">
-                {Object.entries(question.distractors).map(([k, v]) => (
+                {Object.entries(question.distractors).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => (
                   <p key={k} className="text-xs text-gray-600">
                     <span className="font-semibold text-gray-800">{k}:</span> {v}
                   </p>

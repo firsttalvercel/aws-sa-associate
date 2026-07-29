@@ -130,7 +130,7 @@ export default function MistakesPage() {
                           <p className="leading-relaxed">{q.explanation}</p>
                           {Object.entries(q.distractors).length > 0 && (
                             <div className="pt-2 border-t border-gray-200 space-y-1">
-                              {Object.entries(q.distractors).map(([k, v]) => (
+                              {Object.entries(q.distractors).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => (
                                 <p key={k}><span className="font-semibold text-gray-800">{k}:</span> {v}</p>
                               ))}
                             </div>
