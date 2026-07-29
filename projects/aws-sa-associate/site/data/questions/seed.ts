@@ -17,9 +17,9 @@ export const seedQuestions: Question[] = [
     correct: ['A'],
     explanation: 'SSE-KMS with a customer-managed key (CMK) means the company controls the key lifecycle, rotation policy, and access policy in AWS KMS. The key is stored in KMS but the company owns and controls it.',
     distractors: {
-      A: 'SSE-S3 uses AWS-managed keys — the company has no control over the key.',
-      B: 'AWS-managed KMS keys are managed by AWS; the company cannot control rotation or disable them.',
-      D: 'SSE-C works, but the company must send the key with every request, which is operationally complex and risky.',
+      D: 'SSE-S3 uses AWS-managed keys — the company has no control over the key.',
+      C: 'AWS-managed KMS keys are managed by AWS; the company cannot control rotation or disable them.',
+      B: 'SSE-C works, but the company must send the key with every request, which is operationally complex and risky.'
     },
   },
   {
@@ -39,7 +39,7 @@ export const seedQuestions: Question[] = [
     distractors: {
       A: 'Elastic IPs make instances directly reachable from the internet — violates the requirement.',
       C: 'VPC peering is for private connectivity between two VPCs, not to an external internet API.',
-      D: 'An Internet Gateway in a private subnet route table would effectively make it a public subnet.',
+      B: 'An Internet Gateway in a private subnet route table would effectively make it a public subnet.'
     },
   },
   {
@@ -59,7 +59,7 @@ export const seedQuestions: Question[] = [
     distractors: {
       A: 'Read Replicas use asynchronous replication and are for read scaling, not automatic failover.',
       C: 'Read Replicas in different AZs are still for read scaling — they do not provide automatic failover.',
-      D: 'Automated backups allow point-in-time recovery but do not provide automatic failover.',
+      B: 'Automated backups allow point-in-time recovery but do not provide automatic failover.'
     },
   },
   {
@@ -77,9 +77,9 @@ export const seedQuestions: Question[] = [
     correct: ['C'],
     explanation: 'SQS decouples the tiers — the web tier puts messages into the queue and the processing tier reads at its own pace. Messages persist in the queue so nothing is lost during peak load.',
     distractors: {
-      A: 'Auto Scaling helps but does not prevent data loss if scaling is too slow — the tiers are still directly coupled.',
-      C: 'ElastiCache is a cache, not a durable message queue — data can be evicted and lost.',
-      D: 'Scaling the instance size is a short-term fix that does not decouple the architecture or prevent overload.',
+      D: 'Auto Scaling helps but does not prevent data loss if scaling is too slow — the tiers are still directly coupled.',
+      A: 'ElastiCache is a cache, not a durable message queue — data can be evicted and lost.',
+      B: 'Scaling the instance size is a short-term fix that does not decouple the architecture or prevent overload.'
     },
   },
   {
@@ -97,9 +97,9 @@ export const seedQuestions: Question[] = [
     correct: ['D'],
     explanation: 'CloudFront provides global edge caching and HTTPS termination. S3 static website endpoints do not support HTTPS natively — CloudFront in front of S3 solves both global delivery and HTTPS.',
     distractors: {
-      A: 'S3 Transfer Acceleration speeds up uploads to S3, not downloads to global users.',
-      B: 'ALB cannot use S3 as a target — and it would not provide global edge caching.',
-      D: 'S3 website endpoints do not support HTTPS — this is a well-known exam trap.',
+      B: 'S3 Transfer Acceleration speeds up uploads to S3, not downloads to global users.',
+      C: 'ALB cannot use S3 as a target — and it would not provide global edge caching.',
+      A: 'S3 website endpoints do not support HTTPS — this is a well-known exam trap.'
     },
   },
   {
@@ -117,9 +117,9 @@ export const seedQuestions: Question[] = [
     correct: ['B'],
     explanation: 'Standard Reserved Instances with a 3-year, all-upfront payment provide the maximum discount (up to 72% vs On-Demand). For a steady-state 24/7 workload with a known instance type, this is optimal.',
     distractors: {
-      A: 'On-Demand is the most expensive option — no discount for committed usage.',
-      B: 'Spot Instances can be interrupted and are not suitable for steady-state production workloads.',
-      C: 'Convertible RIs offer flexibility to change instance family but provide a smaller discount than Standard RIs (up to 66% vs 72%).',
+      C: 'On-Demand is the most expensive option — no discount for committed usage.',
+      D: 'Spot Instances can be interrupted and are not suitable for steady-state production workloads.',
+      A: 'Convertible RIs offer flexibility to change instance family but provide a smaller discount than Standard RIs (up to 66% vs 72%).'
     },
   },
   {
@@ -137,9 +137,9 @@ export const seedQuestions: Question[] = [
     correct: ['D'],
     explanation: 'Transitioning to S3 Standard-IA after 30 days reduces storage cost for the rarely-accessed period. Deleting at 90 days means no cost beyond that. This matches the access pattern precisely.',
     distractors: {
-      A: 'Intelligent-Tiering adds a monitoring fee per object — cost-effective for unpredictable access but unnecessary when the pattern is known.',
-      B: 'Moving to Glacier after 90 days with a 180-day delete incurs minimum storage duration charges unnecessarily.',
-      D: 'S3 Standard is the most expensive storage class — no cost optimization for the low-access period.',
+      B: 'Intelligent-Tiering adds a monitoring fee per object — cost-effective for unpredictable access but unnecessary when the pattern is known.',
+      A: 'Moving to Glacier after 90 days with a 180-day delete incurs minimum storage duration charges unnecessarily.',
+      C: 'S3 Standard is the most expensive storage class — no cost optimization for the low-access period.'
     },
   },
 ]
