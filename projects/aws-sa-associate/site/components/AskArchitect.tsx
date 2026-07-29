@@ -65,7 +65,10 @@ export function AskArchitect({ question }: Props) {
         }),
       })
 
-      if (!res.ok) throw new Error('API error')
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || `API error ${res.status}`)
+      }
 
       const reader = res.body!.getReader()
       const decoder = new TextDecoder()
@@ -81,10 +84,11 @@ export function AskArchitect({ question }: Props) {
           return updated
         })
       }
-    } catch {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
       setHistory(prev => {
         const updated = [...prev]
-        updated[updated.length - 1] = { role: 'assistant', content: 'Something went wrong. Check that ANTHROPIC_API_KEY is set.' }
+        updated[updated.length - 1] = { role: 'assistant', content: `Error: ${msg}` }
         return updated
       })
     } finally {
