@@ -4,7 +4,6 @@ import { Flag, CheckCircle2, XCircle } from 'lucide-react'
 import type { Question, OptionId } from '../lib/types'
 import { DomainBadge } from './DomainBadge'
 import { OptionButton } from './OptionButton'
-import { AskArchitect } from './AskArchitect'
 
 interface Props {
   question: Question
@@ -112,9 +111,6 @@ export function QuestionCard({
           </div>
         </div>
       )}
-
-      {/* Ask the Architect */}
-      <AskArchitect question={question} />
 
       {/* Actions */}
       <div className="flex items-center justify-between pt-1">
