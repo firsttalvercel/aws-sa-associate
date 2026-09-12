@@ -71,9 +71,12 @@ export async function POST(req: NextRequest) {
   const a2d = isA2dUrl(url.trim());
 
   try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (!a2d) headers["A2A-Version"] = "1.0";
+
     const res = await fetch(url.trim(), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(buildPayload(message, a2d)),
       signal: AbortSignal.timeout(20000),
     });
