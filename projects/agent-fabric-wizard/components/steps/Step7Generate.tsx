@@ -7,7 +7,6 @@ import JSZip from "jszip";
 import { toKebab } from "@/lib/utils";
 import { validateGeneratedFiles } from "@/lib/validator";
 import type { FileValidation } from "@/lib/validator";
-import BrokerDiagram from "@/components/BrokerDiagram";
 
 function ValidationPanel({ results }: { results: FileValidation[] }) {
   const [open, setOpen] = useState(true);
@@ -106,9 +105,6 @@ export default function Step7Generate() {
 
   return (
     <div className="flex flex-col gap-4">
-
-      {/* Broker architecture diagram */}
-      <BrokerDiagram />
 
       {/* Validation */}
       <ValidationPanel results={validation} />
