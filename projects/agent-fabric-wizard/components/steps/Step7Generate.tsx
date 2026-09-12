@@ -124,8 +124,8 @@ export default function Step7Generate() {
               onClick={() => setActiveTab(i)}
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium font-mono transition-colors border-b-2 -mb-px"
               style={{
-                color: activeTab === i ? "#00a0df" : undefined,
-                borderColor: activeTab === i ? "#00a0df" : "transparent",
+                color: activeTab === i ? "var(--ms-blue)" : undefined,
+                borderColor: activeTab === i ? "var(--ms-blue)" : "transparent",
               }}
             >
               {tab.label}

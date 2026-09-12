@@ -17,10 +17,10 @@ export default function StepIndicator({ currentStep }: { currentStep: number }) 
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all"
                 style={{
-                  background: done || active ? "#00a0df" : "white",
+                  background: done || active ? "var(--ms-blue)" : "white",
                   color: done || active ? "white" : "#9ca3af",
-                  border: done || active ? "2px solid #00a0df" : "2px solid #e5e7eb",
-                  boxShadow: active ? "0 0 0 4px #00a0df22" : "none",
+                  border: done || active ? "2px solid var(--ms-blue)" : "2px solid #e5e7eb",
+                  boxShadow: active ? "0 0 0 4px color-mix(in srgb, var(--ms-blue) 13%, transparent)" : "none",
                 }}
               >
                 {done ? <Check size={13} /> : n}
@@ -28,7 +28,7 @@ export default function StepIndicator({ currentStep }: { currentStep: number }) 
               <span
                 className="text-[10px] font-medium whitespace-nowrap"
                 style={{
-                  color: active ? "#00a0df" : done ? "#6b7280" : "#d1d5db",
+                  color: active ? "var(--ms-blue)" : done ? "#6b7280" : "#d1d5db",
                 }}
               >
                 {label}
@@ -37,7 +37,7 @@ export default function StepIndicator({ currentStep }: { currentStep: number }) 
             {i < STEPS.length - 1 && (
               <div
                 className="flex-1 h-px mx-1 mb-4 transition-colors"
-                style={{ background: n < currentStep ? "#00a0df" : "#e5e7eb" }}
+                style={{ background: n < currentStep ? "var(--ms-blue)" : "#e5e7eb" }}
               />
             )}
           </div>

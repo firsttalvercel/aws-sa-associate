@@ -63,6 +63,7 @@ export default function WizardShell() {
   const step = useWizardStore((s) => s.step);
   const config = useWizardStore((s) => s.config);
   const yamlError = useWizardStore((s) => s.yamlError);
+  const standaloneTest = useWizardStore((s) => s.standaloneTest);
   const setStep = useWizardStore((s) => s.setStep);
   const generate = useWizardStore((s) => s.generate);
   const reset = useWizardStore((s) => s.reset);
@@ -94,12 +95,12 @@ export default function WizardShell() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col pb-20" style={{ background: "#f4f6fb" }}>
+    <div className="min-h-screen flex flex-col pb-20" style={{ background: "var(--background)" }}>
 
       <MaxWizard />
 
       {/* ── Top nav bar ─────────────────────────────────────────────── */}
-      <header style={{ background: "#1b2d5a" }} className="px-6 py-3 flex items-center gap-3 shadow-md">
+      <header style={{ background: "var(--ms-navy)" }} className="px-6 py-3 flex items-center gap-3 shadow-md">
         {/* MuleSoft logo */}
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full overflow-hidden bg-white flex items-center justify-center flex-shrink-0">
@@ -119,14 +120,14 @@ export default function WizardShell() {
         <div className="h-4 w-px bg-white/20 mx-1" />
         <span className="text-white/80 text-sm font-medium">Agent Fabric Wizard</span>
         <div className="ml-auto">
-          <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: "#00a0df22", color: "#00a0df", border: "1px solid #00a0df44" }}>
+          <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: "color-mix(in srgb, var(--ms-blue) 13%, transparent)", color: "var(--ms-blue)", border: "1px solid color-mix(in srgb, var(--ms-blue) 27%, transparent)" }}>
             Broker 2.0
           </span>
         </div>
       </header>
 
       {/* ── Hero band ───────────────────────────────────────────────── */}
-      <div style={{ background: "linear-gradient(135deg, #1b2d5a 0%, #0f4c8a 60%, #00a0df 100%)" }} className="relative overflow-hidden">
+      <div style={{ background: "linear-gradient(135deg, var(--ms-navy) 0%, #0f4c8a 60%, var(--ms-blue) 100%)" }} className="relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-6 py-10 relative z-10">
           {!isTemplate && (
             <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">
@@ -187,10 +188,10 @@ export default function WizardShell() {
               {step === 8 ? (
                 <button
                   type="button"
-                  onClick={() => setStep(7)}
+                  onClick={() => standaloneTest ? setStep(0) : setStep(7)}
                   className="px-5 py-2.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors"
                 >
-                  ← Back to files
+                  {standaloneTest ? "← Home" : "← Back to files"}
                 </button>
               ) : (
                 <button
@@ -238,7 +239,7 @@ export default function WizardShell() {
                     onClick={handleNext}
                     disabled={isReview ? !!yamlError : !canAdvance(step, config)}
                     className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
-                    style={{ background: "linear-gradient(135deg, #00a0df, #0077b6)" }}
+                    style={{ background: "linear-gradient(135deg, var(--ms-blue), var(--ms-blue-dark))" }}
                   >
                     {isReview ? "Generate Files →" : "Next →"}
                   </button>

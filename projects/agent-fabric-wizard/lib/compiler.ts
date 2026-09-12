@@ -31,6 +31,20 @@ export function compile(cfg: SimplifiedConfig): GeneratedFiles {
   const a2aAgents = cfg.agents.filter((a) => (a.agentType ?? "a2a") === "a2a");
   const inlineSubagents = cfg.agents.filter((a) => a.agentType === "subagent");
 
+  // Detect registry key collisions — two agents/MCPs whose names normalize to the same key
+  const allNames = [...cfg.agents.map((a) => a.name), ...cfg.mcps.map((m) => m.name)];
+  const keyCount: Record<string, string[]> = {};
+  for (const n of allNames) {
+    const k = registryKey(n);
+    (keyCount[k] ??= []).push(n);
+  }
+  const collisions = Object.values(keyCount).filter((names) => names.length > 1);
+  if (collisions.length) {
+    throw new Error(
+      `Registry key collision: ${collisions.map((c) => c.join(" and ")).join("; ")} produce the same normalized key. Rename one of them.`
+    );
+  }
+
   const agentRegistryLines: string[] = [];
   for (const a of a2aAgents) {
     const key = registryKey(a.name);

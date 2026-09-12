@@ -1,22 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
 import { useWizardStore } from "@/store";
-import { configToYaml } from "@/lib/yaml-adapter";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import BrokerDiagram from "@/components/BrokerDiagram";
 
 export default function Step6ReviewYaml() {
   const yamlText = useWizardStore((s) => s.yamlText);
   const yamlError = useWizardStore((s) => s.yamlError);
-  const config = useWizardStore((s) => s.config);
   const setYaml = useWizardStore((s) => s.setYaml);
-
-  // Always regenerate from current config on mount so stale text never shows
-  useEffect(() => {
-    setYaml(configToYaml(config));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="flex flex-col gap-4">
