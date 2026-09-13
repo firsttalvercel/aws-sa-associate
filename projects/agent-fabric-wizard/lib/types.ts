@@ -2,7 +2,7 @@
 
 export interface AgentDef {
   name: string;
-  agentType?: "a2a" | "subagent"; // "a2a" = external registered agent; "subagent" = inline LLM node (no URL)
+  agentType?: "a2a" | "subagent" | "orchestrator" | "router"; // "a2a" = external; "subagent" = inline LLM node; "orchestrator" = orchestrator branch; "router" = second-level router
   url: string;
   systemPrompt?: string;          // for inline subagents only
   subagentActions?: string[];     // for subagents: agent names + MCP tool names this node can call

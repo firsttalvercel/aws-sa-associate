@@ -297,13 +297,13 @@ export const TEMPLATES: WizardTemplate[] = [
         },
         {
           name: "Orders Router",
-          agentType: "orchestrator",
+          agentType: "router",
           url: "",
           subagentActions: ["Dispatched", "Tracking Update", "Otherwise"],
         },
         {
           name: "Aftercare Orchestrator",
-          agentType: "orchestrator",
+          agentType: "subagent",
           url: "",
           subagentActions: ["Order Management Agent", "Product Recommendations Agent", "Loyalty Agent", "get_customer_profile", "get_purchase_history", "get_delivery_status", "get_active_promotions"],
         },

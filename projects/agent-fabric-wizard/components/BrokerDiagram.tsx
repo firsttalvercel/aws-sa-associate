@@ -69,8 +69,9 @@ const TOOLTIPS: Record<string, string> = {
 function handlerType(handler: string, cfg: SimplifiedConfig): RouteType {
   const agent = cfg.agents.find(a => a.name === handler);
   if (agent) {
-    if (agent.agentType === "orchestrator") return "subrouter";
-    if (agent.agentType === "subagent") return "LLM";
+    if (agent.agentType === "router")       return "subrouter";
+    if (agent.agentType === "orchestrator") return "orch";
+    if (agent.agentType === "subagent")     return "LLM";
     return "A2A";
   }
   return "MCP";
