@@ -295,6 +295,18 @@ export const TEMPLATES: WizardTemplate[] = [
             { id: "returns-processing", description: "Process return requests and track refund status" },
           ],
         },
+        {
+          name: "Orders Router",
+          agentType: "orchestrator",
+          url: "",
+          subagentActions: ["Dispatched", "Tracking Update", "Otherwise"],
+        },
+        {
+          name: "Aftercare Orchestrator",
+          agentType: "orchestrator",
+          url: "",
+          subagentActions: ["Order Management Agent", "Product Recommendations Agent", "Loyalty Agent", "get_customer_profile", "get_purchase_history", "get_delivery_status", "get_active_promotions"],
+        },
       ],
       mcps: [
         {
@@ -318,8 +330,8 @@ export const TEMPLATES: WizardTemplate[] = [
         intents: [
           { label: "Discovery", description: "Product searches, recommendations, and promotions", handler: "Product Recommendations Agent" },
           { label: "Loyalty", description: "Points balance, tier status, and rewards redemption", handler: "Loyalty Agent" },
-          { label: "Inventory", description: "Stock checks and inventory reservation", handler: "Inventory Agent" },
-          { label: "Orders", description: "Order status, tracking, returns, and shipping", handler: "Order Management Agent" },
+          { label: "Orders", description: "Order status, tracking, returns, and shipping", handler: "Orders Router" },
+          { label: "Aftercare", description: "Returns, refunds, re-purchase suggestions, and post-purchase care", handler: "Aftercare Orchestrator" },
         ],
       },
     },
