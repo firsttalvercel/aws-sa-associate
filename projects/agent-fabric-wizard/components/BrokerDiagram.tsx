@@ -45,13 +45,14 @@ const TYPE_COLOR: Record<string, string> = {
   mcp:          "#6d28d9",
 };
 
-type RouteType = "A2A" | "LLM" | "MCP" | "orch";
+type RouteType = "A2A" | "LLM" | "MCP" | "orch" | "subrouter";
 
 const PILL: Record<RouteType, { bg: string; text: string; border: string; label: string }> = {
-  "A2A":  { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe", label: "A2A" },
-  "LLM":  { bg: "#f0fdf4", text: "#059669", border: "#bbf7d0", label: "Subagent" },
-  "MCP":  { bg: "#faf5ff", text: "#7c3aed", border: "#e9d5ff", label: "MCP" },
-  "orch": { bg: "#fff7ed", text: "#92400e", border: "#fde68a", label: "Fallback" },
+  "A2A":       { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe", label: "A2A" },
+  "LLM":       { bg: "#f0fdf4", text: "#059669", border: "#bbf7d0", label: "Subagent" },
+  "MCP":       { bg: "#faf5ff", text: "#7c3aed", border: "#e9d5ff", label: "MCP" },
+  "orch":      { bg: "#fff7ed", text: "#92400e", border: "#fde68a", label: "Fallback" },
+  "subrouter": { bg: "#f5f3ff", text: "#7c3aed", border: "#ddd6fe", label: "Router" },
 };
 
 const TOOLTIPS: Record<string, string> = {
@@ -67,7 +68,11 @@ const TOOLTIPS: Record<string, string> = {
 
 function handlerType(handler: string, cfg: SimplifiedConfig): RouteType {
   const agent = cfg.agents.find(a => a.name === handler);
-  if (agent) return agent.agentType === "subagent" ? "LLM" : "A2A";
+  if (agent) {
+    if (agent.agentType === "orchestrator") return "subrouter";
+    if (agent.agentType === "subagent") return "LLM";
+    return "A2A";
+  }
   return "MCP";
 }
 
@@ -111,8 +116,9 @@ function buildGraph(cfg: SimplifiedConfig): { nodes: DiagNode[]; edges: DiagEdge
 
   // Each intent takes N slots where N = number of called actions (min 1)
   const intentSlots = intents.map(intent => {
-    const agentDef = cfg.agents.find(a => a.name === intent.handler && a.agentType === "subagent");
-    const actions  = agentDef?.subagentActions ?? [];
+    const agentDef = cfg.agents.find(a => a.name === intent.handler);
+    if (!agentDef) return 1;
+    const actions = agentDef.subagentActions ?? [];
     return Math.max(1, actions.length);
   });
   const slotStarts       = intentSlots.map((_, i) => intentSlots.slice(0, i).reduce((s, n) => s + n, 0));
@@ -129,9 +135,12 @@ function buildGraph(cfg: SimplifiedConfig): { nodes: DiagNode[]; edges: DiagEdge
   const allLabels: string[]    = [...intents.map(i => i.label), "otherwise"];
   const allTypes:  RouteType[] = [...intents.map(i => handlerType(i.handler, cfg)), "orch"];
 
-  // Which router rows are subagents (for indentation)
+  // Which router rows are subagents (for indentation in the main router)
   const indentedIndices = intents
-    .map((intent, i) => handlerType(intent.handler, cfg) === "LLM" ? i : -1)
+    .map((intent, i) => {
+      const t = handlerType(intent.handler, cfg);
+      return (t === "LLM" || t === "subrouter") ? i : -1;
+    })
     .filter(i => i >= 0);
 
   nodes.push({ id: "trigger",  label: "BrokerTrigger",  type: "trigger",   cx: col(0), cy: row(midSlot), height: NH });
@@ -150,9 +159,11 @@ function buildGraph(cfg: SimplifiedConfig): { nodes: DiagNode[]; edges: DiagEdge
   intents.forEach((intent, i) => {
     const rtype = allTypes[i];
     let nodeType: string;
-    if      (rtype === "LLM") nodeType = "subagent";
-    else if (rtype === "MCP") nodeType = "mcp";
-    else                      nodeType = "executor";
+    if      (rtype === "LLM")       nodeType = "subagent";
+    else if (rtype === "MCP")       nodeType = "mcp";
+    else if (rtype === "orch")      nodeType = "orchestrator";
+    else if (rtype === "subrouter") nodeType = "subrouter";
+    else                            nodeType = "executor";
 
     const startSlot = slotStarts[i];
     const slotCount = intentSlots[i];
@@ -184,6 +195,27 @@ function buildGraph(cfg: SimplifiedConfig): { nodes: DiagNode[]; edges: DiagEdge
       const echoId = `sa${i}_echo`;
       nodes.push({ id: echoId, label: "Echo", type: "echo", cx: col(5), cy: handlerCy, height: NH });
       edges.push({ from: `h${i}`, to: echoId });
+    } else if (nodeType === "subrouter") {
+      // Named orchestrator rendered as a sub-router node with its own route rows
+      const agentDef   = cfg.agents.find(a => a.name === intent.handler);
+      const actions    = agentDef?.subagentActions ?? [];
+      const nActions   = Math.max(actions.length, 1);
+      const subRtrH    = routerH(nActions);
+      const subRouteLabels = actions.length > 0 ? actions : ["(all tools)"];
+      const subRouteTypes: RouteType[] = subRouteLabels.map(a => {
+        const ag = cfg.agents.find(x => x.name === a);
+        if (ag) return ag.agentType === "subagent" ? "LLM" : "A2A";
+        return "MCP";
+      });
+      nodes.push({
+        id: `h${i}`, label: intent.label, sublabel: intent.handler,
+        type: "router", cx: col(3), cy: handlerCy, height: subRtrH,
+        routeLabels: subRouteLabels, routeTypes: subRouteTypes,
+        indentedIndices: [],
+      });
+      nodes.push({ id: `e${i}`, label: "Echo", type: "echo", cx: col(4), cy: handlerCy, height: NH });
+      edges.push({ from: "router", to: `h${i}`, fromY });
+      edges.push({ from: `h${i}`, to: `e${i}` });
     } else {
       // Regular handler at col 3, echo at col 4
       nodes.push({ id: `h${i}`, label: intent.handler, sublabel: intent.label, type: nodeType, cx: col(3), cy: handlerCy, height: NH });
@@ -196,7 +228,7 @@ function buildGraph(cfg: SimplifiedConfig): { nodes: DiagNode[]; edges: DiagEdge
   // Orchestrator (fallback)
   const orchFromY = routerTop + ROUTER_HEAD + (nIntents + 0.5) * ROUTE_ROW;
   const orchCy    = row(totalIntentSlots);
-  nodes.push({ id: "orch",     label: "Orchestrator", sublabel: "fallback", type: "orchestrator", cx: col(3), cy: orchCy, height: NH });
+  nodes.push({ id: "orch",     label: "General Orchestrator", sublabel: "fallback", type: "orchestrator", cx: col(3), cy: orchCy, height: NH });
   nodes.push({ id: "orchEcho", label: "Echo",                               type: "echo",         cx: col(4), cy: orchCy, height: NH });
   edges.push({ from: "router", to: "orch",     fromY: orchFromY, fallback: true });
   edges.push({ from: "orch",   to: "orchEcho" });
@@ -295,11 +327,12 @@ function NodeCard({ n, onHover, onLeave, highlight, pulse }: {
 
   // ── standard card ─────────────────────────────────────────────────
   const isFallback = n.sublabel === "fallback";
+  const isOrch     = n.type === "orchestrator";
   const isSubagent = n.type === "subagent";
   const borderColor = highlight
     ? (pulse ? "#3b82f6" : "#10b981")
-    : isFallback ? "#fcd34d" : isSubagent ? "#86efac" : CARD_BORDER;
-  const borderWidth = highlight ? 2.5 : isFallback || isSubagent ? 2 : 1.5;
+    : isFallback || isOrch ? "#fcd34d" : isSubagent ? "#86efac" : CARD_BORDER;
+  const borderWidth = highlight ? 2.5 : isFallback || isOrch || isSubagent ? 2 : 1.5;
 
   return (
     <g onMouseEnter={e => onHover(e, n.type, n.label)} onMouseLeave={onLeave} style={{ cursor: "default" }}>
@@ -317,10 +350,10 @@ function NodeCard({ n, onHover, onLeave, highlight, pulse }: {
       </text>
       {n.sublabel && (
         <text x={n.cx} y={y + 52} textAnchor="middle" fontSize={9}
-              fill={isFallback ? "#d97706" : "#94a3b8"}
+              fill={isOrch ? "#d97706" : "#94a3b8"}
               fontFamily="system-ui, sans-serif"
               fontStyle={isFallback ? "italic" : "normal"}
-              fontWeight={isFallback ? "600" : "400"}>
+              fontWeight={isOrch ? "600" : "400"}>
           {trunc(n.sublabel, 18)}
         </text>
       )}
@@ -438,7 +471,7 @@ export default function BrokerDiagram({ activePath, runState, configOverride }: 
         <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Broker Flow</span>
         <span className="text-[11px] text-gray-500">{config.name}</span>
         <div className="ml-auto flex items-center gap-3 flex-wrap">
-          {(["A2A", "LLM", "MCP"] as RouteType[]).map(rt => {
+          {(["A2A", "LLM", "MCP", "subrouter"] as RouteType[]).map(rt => {
             const p = PILL[rt];
             return (
               <div key={rt} className="flex items-center gap-1">
@@ -447,7 +480,7 @@ export default function BrokerDiagram({ activePath, runState, configOverride }: 
                   {p.label}
                 </span>
                 <span className="text-[10px] text-gray-400">
-                  {rt === "A2A" ? "External agent" : rt === "LLM" ? "Built-in subagent" : "MCP tool"}
+                  {rt === "A2A" ? "External agent" : rt === "LLM" ? "Built-in subagent" : rt === "MCP" ? "MCP tool" : "Sub-router"}
                 </span>
               </div>
             );
