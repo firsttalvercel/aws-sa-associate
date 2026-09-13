@@ -54,6 +54,14 @@ export const TEMPLATES: WizardTemplate[] = [
           ],
         },
         {
+          name: "Applicant Subagent",
+          agentType: "subagent",
+          url: "",
+          systemPrompt:
+            "You are an applicant services specialist. Run credit scoring, document verification, fraud detection, KYC, and AML checks as needed. Always complete with a concise summary. Never ask for more information.",
+          subagentActions: ["Credit Scoring Agent", "Document Verification Agent", "Fraud Detection Agent", "run_kyc_check", "run_aml_screening"],
+        },
+        {
           name: "Risk Assessor",
           agentType: "subagent",
           url: "",
@@ -77,13 +85,7 @@ export const TEMPLATES: WizardTemplate[] = [
       routing: {
         type: "intent",
         intents: [
-          { label: "Credit Check", description: "Evaluate applicant creditworthiness, score, and maximum loan eligibility", handler: "Credit Scoring Agent" },
-          { label: "Document Verify", description: "Verify applicant identity and income documents against the application", handler: "Document Verification Agent" },
-          { label: "Fraud Check", description: "Screen the application for fraud indicators, velocity anomalies, and synthetic identity signals", handler: "Fraud Detection Agent" },
-          { label: "KYC Check", description: "Run a Know Your Customer compliance check for the applicant", handler: "run_kyc_check" },
-          { label: "AML Screening", description: "Run Anti-Money Laundering screening against sanctions lists and PEP databases", handler: "run_aml_screening" },
-          { label: "Loan Products", description: "Retrieve available loan products with interest rates and eligibility requirements", handler: "get_loan_products" },
-          { label: "Submit Decision", description: "Record the final loan decision (approved, referred, or declined) with rationale.", handler: "submit_loan_decision" },
+          { label: "Applicant Services", description: "Credit scoring, document verification, fraud detection, KYC, and AML screening", handler: "Applicant Subagent" },
           { label: "Risk Assessment", description: "Synthesise credit, document, and fraud results into a final risk verdict and loan recommendation", handler: "Risk Assessor" },
         ],
       },
@@ -214,6 +216,22 @@ export const TEMPLATES: WizardTemplate[] = [
             { id: "track-claims-status", description: "Retrieve real-time status of submitted claims with denial reasons" },
           ],
         },
+        {
+          name: "Clinical Subagent",
+          agentType: "subagent",
+          url: "",
+          systemPrompt:
+            "You are a clinical intelligence agent. Handle patient records, lab results, medications, drug interactions, and treatment protocols. Always complete with a concise summary. Never ask for more information.",
+          subagentActions: ["Patient Records Agent", "Clinical Decision Support Agent"],
+        },
+        {
+          name: "Administrative Subagent",
+          agentType: "subagent",
+          url: "",
+          systemPrompt:
+            "You are a healthcare administrative specialist. Handle eligibility checks, prior authorizations, claims status, PHI access logging, and HIPAA compliance. Always complete with a concise summary. Never ask for more information.",
+          subagentActions: ["Insurance Authorization Agent", "check_eligibility", "submit_prior_auth"],
+        },
       ],
       mcps: [
         {
@@ -235,11 +253,9 @@ export const TEMPLATES: WizardTemplate[] = [
       routing: {
         type: "intent",
         intents: [
-          { label: "Clinical", description: "Patient records, lab results, medications, drug interactions, and treatment protocols", handler: "Patient Records Agent" },
+          { label: "Clinical", description: "Patient records, lab results, medications, drug interactions, and treatment protocols", handler: "Clinical Subagent" },
           { label: "Care Coordination", description: "Specialist referrals, care gaps, transitions of care, and appointment scheduling", handler: "Care Coordination Agent" },
-          { label: "Insurance & Auth", description: "Eligibility checks, prior authorization, claims status, and appeals", handler: "Insurance Authorization Agent" },
-          { label: "Drug Interactions", description: "Check drug-drug and drug-allergy interactions for a patient medication profile", handler: "Clinical Decision Support Agent" },
-          { label: "HIPAA Audit", description: "Log PHI access, check consent status, and generate audit trail for compliance", handler: "PHI Access Logger" },
+          { label: "Administrative", description: "Eligibility checks, prior authorization, claims status, PHI logging, and HIPAA compliance", handler: "Administrative Subagent" },
         ],
       },
     },
@@ -332,6 +348,66 @@ export const TEMPLATES: WizardTemplate[] = [
           { label: "Loyalty", description: "Points balance, tier status, and rewards redemption", handler: "Loyalty Agent" },
           { label: "Orders", description: "Order status, tracking, returns, and shipping", handler: "Orders Router" },
           { label: "Aftercare", description: "Returns, refunds, re-purchase suggestions, and post-purchase care", handler: "Aftercare Orchestrator" },
+        ],
+      },
+    },
+  },
+  {
+    id: "it-help",
+    label: "IT Help Desk",
+    industry: "IT",
+    description: "IT support broker that triages employee requests, investigates routine issues, and escalates high-severity incidents",
+    industryColor: "slate",
+    config: {
+      name: "IT Help Investigation",
+      description: "IT support broker that triages employee requests, investigates routine issues using available services, keeps Jira updated, and escalates cases that cannot be handled automatically",
+      orgId: "9a5bbced-4ad9-45ff-8353-8386cd29f9a1",
+      businessGroupId: "63d813c9-ab7a-446a-b832-429bfdb076ef",
+      version: "1.0.0",
+      tags: ["agentscript", "it-help"],
+      llm: { provider: "openai", model: "gpt-5-mini" },
+      agents: [
+        {
+          name: "Help Center Agent",
+          agentType: "a2a",
+          url: "",
+          skills: [
+            { id: "search-help-center", description: "Search the internal help center knowledge base for solutions" },
+          ],
+        },
+        {
+          name: "License Procurement Agent",
+          agentType: "a2a",
+          url: "",
+          skills: [
+            { id: "procure-license", description: "Provision software licenses and access for employees" },
+          ],
+        },
+        {
+          name: "Resolution Router",
+          agentType: "router",
+          url: "",
+          subagentActions: ["Help Provided", "License Provided", "Otherwise"],
+        },
+      ],
+      mcps: [
+        {
+          name: "Jira MCP",
+          url: "",
+          tools: ["update_issue"],
+        },
+        {
+          name: "Escalation MCP",
+          url: "",
+          tools: ["escalate"],
+        },
+      ],
+      routing: {
+        type: "intent",
+        intents: [
+          { label: "Needs Clarification", description: "Request is too vague to classify — ask for more detail", handler: "clarification_echo" },
+          { label: "High Severity", description: "Outage, security incident, or business-critical issue — escalate immediately", handler: "escalate" },
+          { label: "Low Severity", description: "Single-user issue, password reset, license request, or how-to query", handler: "Resolution Router" },
         ],
       },
     },
